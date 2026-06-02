@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mehta & Varma — Architecture</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --sand: #E8DFD0;
+    --clay: #C4A882;
+    --terracotta: #9E5E3A;
+    --bark: #3D2B1F;
+    --smoke: #F5F1EC;
+    --charcoal: #1C1612;
+    --mist: rgba(232,223,208,0.15);
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--smoke);
+    color: var(--charcoal);
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 10px; height: 10px;
+    background: var(--terracotta);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: multiply;
+  }
+  .cursor-ring {
+    width: 36px; height: 36px;
+    border: 1px solid var(--clay);
+    border-radius: 50%;
+    position: fixed; top: 0; left: 0;
+    pointer-events: none; z-index: 9998;
+    transition: transform 0.4s ease, opacity 0.3s;
+    opacity: 0.6;
+  }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 28px 48px;
+    mix-blend-mode: multiply;
+    transition: background 0.4s;
+  }
+  nav.scrolled {
+    background: rgba(245,241,236,0.92);
+    backdrop-filter: blur(12px);
+    mix-blend-mode: normal;
+    border-bottom: 1px solid var(--sand);
+  }
+  .logo {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 300;
+    letter-spacing: 0.08em;
+    color: var(--charcoal);
+    text-decoration: none;
+  }
+  .logo span { font-style: italic; color: var(--terracotta); }
+  .nav-links {
+    display: flex; gap: 40px;
+    list-style: none;
+  }
+  .nav-links a {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--bark);
+    position: relative;
+    padding-bottom: 2px;
+  }
+  .nav-links a::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0;
+    width: 0; height: 1px;
+    background: var(--terracotta);
+    transition: width 0.3s ease;
+  }
+  .nav-links a:hover::after { width: 100%; }
+
+  /* HERO */
+  .hero {
+    height: 100vh;
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    overflow: hidden;
+  }
+  .hero-left {
+    background: var(--bark);
+    display: flex; flex-direction: column;
+    justify-content: flex-end;
+    padding: 80px 64px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-left::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23C4A882' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .hero-eyebrow {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 24px;
+  }
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--sand);
+    margin-bottom: 32px;
+  }
+  .hero-title em { font-style: italic; color: var(--clay); }
+  .hero-desc {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    color: rgba(232,223,208,0.6);
+    max-width: 380px;
+    margin-bottom: 48px;
+  }
+  .hero-cta {
+    display: inline-flex; align-items: center; gap: 16px;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--clay);
+    border: 1px solid var(--clay);
+    padding: 14px 32px;
+    transition: all 0.3s ease;
+  }
+  .hero-cta:hover {
+    background: var(--clay);
+    color: var(--bark);
+  }
+  .hero-cta::after { content: '→'; font-size: 1rem; }
+
+  .hero-right {
+    position: relative;
+    overflow: hidden;
+  }
+  .hero-slideshow {
+    position: absolute; inset: 0;
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 3px;
+  }
+  .hero-img {
+    overflow: hidden;
+    position: relative;
+  }
+  .hero-img-fill {
+    position: absolute; inset: 0;
+    transition: transform 8s ease;
+  }
+  .hero-img:hover .hero-img-fill { transform: scale(1.05); }
+  /* Gradient image fills */
+  .img-fill-1 { background: linear-gradient(135deg, #8B6F47 0%, #5C3D2E 40%, #2D1B0E 100%); }
+  .img-fill-2 { background: linear-gradient(135deg, #A08060 0%, #6B4423 50%, #3A2010 100%); }
+
+  .hero-img-label {
+    position: absolute;
+    bottom: 20px; left: 20px;
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(232,223,208,0.7);
+  }
+  /* Architectural SVG overlays on images */
+  .arch-overlay {
+    position: absolute; inset: 0;
+    opacity: 0.12;
+  }
+
+  .hero-year {
+    position: absolute;
+    right: 32px; bottom: 40px;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 6rem;
+    font-weight: 300;
+    color: rgba(232,223,208,0.08);
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  /* SECTION COMMON */
+  section { padding: 120px 48px; }
+
+  .section-tag {
+    display: inline-flex; align-items: center; gap: 12px;
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin-bottom: 48px;
+  }
+  .section-tag::before {
+    content: '';
+    display: block;
+    width: 32px; height: 1px;
+    background: var(--terracotta);
+  }
+
+  /* PHILOSOPHY */
+  .philosophy {
+    background: var(--charcoal);
+    padding: 100px 48px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .philosophy-quote {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.3;
+    color: var(--sand);
+  }
+  .philosophy-quote span { color: var(--clay); }
+  .philosophy-text {
+    font-size: 0.88rem;
+    line-height: 2;
+    color: rgba(232,223,208,0.55);
+  }
+  .philosophy-text p + p { margin-top: 20px; }
+  .philosophy-link {
+    display: inline-flex; align-items: center; gap: 10px;
+    margin-top: 32px;
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--clay);
+    border-bottom: 1px solid var(--clay);
+    padding-bottom: 4px;
+    transition: gap 0.3s;
+  }
+  .philosophy-link:hover { gap: 20px; }
+  .philosophy-link::after { content: '→'; }
+
+  /* PROJECTS */
+  .projects { background: var(--smoke); }
+  .projects-header {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    margin-bottom: 64px;
+  }
+  .projects-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(2.5rem, 5vw, 4rem);
+    font-weight: 300;
+    line-height: 1.1;
+  }
+  .projects-title em { font-style: italic; color: var(--terracotta); }
+  .see-all {
+    font-size: 0.72rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--terracotta);
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--terracotta);
+    padding-bottom: 2px;
+    transition: gap 0.3s;
+  }
+  .see-all:hover { gap: 16px; }
+  .see-all::after { content: '→'; }
+
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: auto;
+    gap: 16px;
+  }
+  .proj-card {
+    position: relative;
+    overflow: hidden;
+    cursor: none;
+  }
+  .proj-card:nth-child(1) { grid-column: 1 / 8; grid-row: 1; aspect-ratio: 7/5; }
+  .proj-card:nth-child(2) { grid-column: 8 / 13; grid-row: 1; aspect-ratio: 5/5; }
+  .proj-card:nth-child(3) { grid-column: 1 / 5; grid-row: 2; aspect-ratio: 4/5; }
+  .proj-card:nth-child(4) { grid-column: 5 / 9; grid-row: 2; aspect-ratio: 4/5; }
+  .proj-card:nth-child(5) { grid-column: 9 / 13; grid-row: 2; aspect-ratio: 4/5; }
+
+  .proj-img {
+    position: absolute; inset: 0;
+    transition: transform 0.7s ease;
+  }
+  .proj-card:hover .proj-img { transform: scale(1.06); }
+  .p1 { background: linear-gradient(160deg, #8B7355 0%, #4A3728 60%, #2A1A10 100%); }
+  .p2 { background: linear-gradient(200deg, #6B8A7A 0%, #3D5E50 60%, #1E3328 100%); }
+  .p3 { background: linear-gradient(140deg, #9E7A5A 0%, #5C3D28 60%, #2D1A0E 100%); }
+  .p4 { background: linear-gradient(180deg, #7A6B8A 0%, #4A3B5E 60%, #221530 100%); }
+  .p5 { background: linear-gradient(160deg, #8A7A55 0%, #5E4A28 60%, #301E0A 100%); }
+
+  /* SVG arch shapes in project cards */
+  .proj-arch {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.2;
+  }
+
+  .proj-info {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 32px 28px 28px;
+    background: linear-gradient(to top, rgba(28,22,18,0.9) 0%, transparent 100%);
+    transform: translateY(8px);
+    transition: transform 0.4s ease;
+  }
+  .proj-card:hover .proj-info { transform: translateY(0); }
+  .proj-cat {
+    font-size: 0.6rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 6px;
+  }
+  .proj-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 300;
+    color: var(--sand);
+    line-height: 1.2;
+  }
+  .proj-loc {
+    font-size: 0.72rem;
+    color: rgba(232,223,208,0.5);
+    margin-top: 4px;
+  }
+
+  /* STATS */
+  .stats {
+    background: var(--clay);
+    padding: 80px 48px;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+  }
+  .stat {
+    padding: 40px;
+    background: var(--clay);
+    border-left: 1px solid rgba(28,22,18,0.15);
+    text-align: center;
+  }
+  .stat:first-child { border-left: none; }
+  .stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 4.5rem;
+    font-weight: 300;
+    color: var(--bark);
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: rgba(61,43,31,0.7);
+    margin-top: 8px;
+  }
+
+  /* TEAM */
+  .team { background: var(--smoke); }
+  .team-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 40px;
+    margin-top: 64px;
+  }
+  .team-card {
+    position: relative;
+  }
+  .team-photo {
+    aspect-ratio: 3/4;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .team-photo-fill {
+    position: absolute; inset: 0;
+    transition: transform 0.6s ease;
+  }
+  .team-card:hover .team-photo-fill { transform: scale(1.04); }
+  .t1 { background: linear-gradient(160deg, #7A6B55 20%, #3D2B1F 100%); }
+  .t2 { background: linear-gradient(160deg, #6B7A5A 20%, #2B3D1F 100%); }
+  .t3 { background: linear-gradient(160deg, #6B5A7A 20%, #2B1F3D 100%); }
+
+  .team-silhouette {
+    position: absolute; bottom: 0; left: 50%;
+    transform: translateX(-50%);
+    opacity: 0.3;
+  }
+  .team-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+  }
+  .team-title {
+    font-size: 0.7rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--terracotta);
+    margin-top: 4px;
+  }
+
+  /* CONTACT / FOOTER */
+  footer {
+    background: var(--bark);
+    padding: 80px 48px 48px;
+  }
+  .footer-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 80px;
+    padding-bottom: 64px;
+    border-bottom: 1px solid rgba(196,168,130,0.2);
+  }
+  .footer-brand .logo { font-size: 2rem; margin-bottom: 20px; display: block; }
+  .footer-tagline {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    color: rgba(232,223,208,0.5);
+    line-height: 1.6;
+    max-width: 300px;
+  }
+  .footer-email {
+    display: block;
+    margin-top: 28px;
+    font-size: 0.78rem;
+    color: var(--clay);
+    text-decoration: none;
+    border-bottom: 1px solid rgba(196,168,130,0.3);
+    padding-bottom: 4px;
+    transition: border-color 0.3s;
+  }
+  .footer-email:hover { border-color: var(--clay); }
+  .footer-col-title {
+    font-size: 0.65rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--clay);
+    margin-bottom: 24px;
+  }
+  .footer-col ul { list-style: none; }
+  .footer-col li + li { margin-top: 12px; }
+  .footer-col a {
+    font-size: 0.82rem;
+    color: rgba(232,223,208,0.5);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .footer-col a:hover { color: var(--clay); }
+  .footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 32px;
+    font-size: 0.72rem;
+    color: rgba(232,223,208,0.3);
+  }
+  .social-links { display: flex; gap: 20px; }
+  .social-links a {
+    font-size: 0.72rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(232,223,208,0.4);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+  .social-links a:hover { color: var(--clay); }
+
+  /* Scroll reveal animation */
+  .reveal { opacity: 0; transform: translateY(40px); transition: opacity 0.8s ease, transform 0.8s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  /* Mobile */
+  @media (max-width: 900px) {
+    nav { padding: 20px 24px; }
+    .nav-links { display: none; }
+    .hero { grid-template-columns: 1fr; }
+    .hero-right { display: none; }
+    .hero-left { padding: 80px 24px 60px; min-height: 100vh; justify-content: flex-end; }
+    section { padding: 80px 24px; }
+    .philosophy { grid-template-columns: 1fr; }
+    .projects-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+    .proj-card:nth-child(1) { grid-column: 1 / 3; grid-row: 1; }
+    .proj-card:nth-child(2) { grid-column: 1 / 2; grid-row: 2; }
+    .proj-card:nth-child(3) { grid-column: 2 / 3; grid-row: 2; }
+    .proj-card:nth-child(4) { grid-column: 1 / 2; grid-row: 3; }
+    .proj-card:nth-child(5) { grid-column: 2 / 3; grid-row: 3; }
+    .stats { grid-template-columns: 1fr 1fr; }
+    .team-grid { grid-template-columns: 1fr; }
+    .footer-top { grid-template-columns: 1fr; gap: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<!-- NAV -->
+<nav id="nav">
+  <a href="#" class="logo">Mehta <span>&</span> Varma</a>
+  <ul class="nav-links">
+    <li><a href="#projects">Projects</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#team">Team</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">Est. 1998 · New Delhi · Jaipur</p>
+    <h1 class="hero-title">
+      Spaces that<br>
+      <em>breathe</em><br>
+      with the land
+    </h1>
+    <p class="hero-desc">We are place-makers rooted in the Indian subcontinent — weaving craft traditions, climate wisdom and contemporary form into architecture that belongs.</p>
+    <a href="#projects" class="hero-cta">View Our Work</a>
+    <div class="hero-year">2025</div>
+  </div>
+  <div class="hero-right">
+    <div class="hero-slideshow">
+      <div class="hero-img">
+        <div class="hero-img-fill img-fill-1">
+          <svg class="arch-overlay" viewBox="0 0 600 400" xmlns="http://www.w3.org/2000/svg">
+            <path d="M100 400 L100 200 Q100 100 200 100 Q300 100 300 200 L300 400" stroke="#C4A882" stroke-width="1" fill="none"/>
+            <path d="M320 400 L320 180 Q320 80 450 80 Q580 80 580 180 L580 400" stroke="#C4A882" stroke-width="1" fill="none"/>
+            <line x1="0" y1="250" x2="600" y2="250" stroke="#C4A882" stroke-width="0.5" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="hero-img-label">Rathi Residence · Jaipur 2024</div>
+      </div>
+      <div class="hero-img">
+        <div class="hero-img-fill img-fill-2">
+          <svg class="arch-overlay" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg">
+            <rect x="50" y="50" width="200" height="250" stroke="#C4A882" stroke-width="1" fill="none"/>
+            <rect x="280" y="100" width="150" height="200" stroke="#C4A882" stroke-width="1" fill="none"/>
+            <rect x="460" y="30" width="100" height="270" stroke="#C4A882" stroke-width="1" fill="none"/>
+            <line x1="0" y1="150" x2="600" y2="150" stroke="#C4A882" stroke-width="0.5" opacity="0.3"/>
+          </svg>
+        </div>
+        <div class="hero-img-label">Mehrauli Cultural Center · Delhi 2023</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY -->
+<div class="philosophy" id="about">
+  <blockquote class="philosophy-quote reveal">
+    "The most enduring architecture is that which <span>listens to its land</span> before it speaks."
+  </blockquote>
+  <div class="reveal">
+    <p class="philosophy-text">At Mehta & Varma, we are rooted contextualists. Every project begins with an act of careful listening — to the site, its climate, its cultural memory, and the people who will inhabit it.</p>
+    <p class="philosophy-text">We draw from Rajasthani vernacular wisdom, Mughal spatial logic, and the artisanship of India's living craft traditions — reinterpreted through a rigorous contemporary lens.</p>
+    <a href="#team" class="philosophy-link">Meet the founders</a>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat reveal"><div class="stat-number">27</div><div class="stat-label">Years of Practice</div></div>
+  <div class="stat reveal"><div class="stat-number">140+</div><div class="stat-label">Projects Built</div></div>
+  <div class="stat reveal"><div class="stat-number">18</div><div class="stat-label">National Awards</div></div>
+  <div class="stat reveal"><div class="stat-number">6</div><div class="stat-label">Countries</div></div>
+</div>
+
+<!-- PROJECTS -->
+<section class="projects" id="projects">
+  <div class="projects-header reveal">
+    <h2 class="projects-title">Selected<br><em>Work</em></h2>
+    <a href="#" class="see-all">See All Projects</a>
+  </div>
+  <div class="projects-grid">
+    <!-- Card 1 -->
+    <article class="proj-card reveal">
+      <div class="proj-img p1">
+        <div class="proj-arch">
+          <svg width="60%" height="60%" viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M30 200 L30 80 Q30 20 150 20 Q270 20 270 80 L270 200" stroke="#E8DFD0" stroke-width="1.5" fill="none"/>
+            <line x1="0" y1="100" x2="300" y2="100" stroke="#E8DFD0" stroke-width="0.5"/>
+          </svg>
+        </div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-cat">Residential</div>
+        <div class="proj-name">Rathi Haveli</div>
+        <div class="proj-loc">Jaipur, 2024</div>
+      </div>
+    </article>
+    <!-- Card 2 -->
+    <article class="proj-card reveal">
+      <div class="proj-img p2">
+        <div class="proj-arch">
+          <svg width="60%" height="60%" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="40" width="160" height="160" stroke="#E8DFD0" stroke-width="1.5" fill="none"/>
+            <rect x="60" y="80" width="80" height="120" stroke="#E8DFD0" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-cat">Cultural</div>
+        <div class="proj-name">Mehrauli Cultural Centre</div>
+        <div class="proj-loc">New Delhi, 2023</div>
+      </div>
+    </article>
+    <!-- Card 3 -->
+    <article class="proj-card reveal">
+      <div class="proj-img p3">
+        <div class="proj-arch">
+          <svg width="60%" height="60%" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 200 L20 60 L80 20 L140 60 L140 200" stroke="#E8DFD0" stroke-width="1.5" fill="none"/>
+            <line x1="20" y1="130" x2="140" y2="130" stroke="#E8DFD0" stroke-width="0.8"/>
+          </svg>
+        </div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-cat">Leisure</div>
+        <div class="proj-name">Aravalli Retreat</div>
+        <div class="proj-loc">Alwar, 2023</div>
+      </div>
+    </article>
+    <!-- Card 4 -->
+    <article class="proj-card reveal">
+      <div class="proj-img p4">
+        <div class="proj-arch">
+          <svg width="60%" height="60%" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="80" cy="80" r="60" stroke="#E8DFD0" stroke-width="1.5" fill="none"/>
+            <rect x="40" y="140" width="80" height="60" stroke="#E8DFD0" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-cat">Corporate</div>
+        <div class="proj-name">Horizon Office Campus</div>
+        <div class="proj-loc">Gurgaon, 2022</div>
+      </div>
+    </article>
+    <!-- Card 5 -->
+    <article class="proj-card reveal">
+      <div class="proj-img p5">
+        <div class="proj-arch">
+          <svg width="60%" height="60%" viewBox="0 0 160 200" xmlns="http://www.w3.org/2000/svg">
+            <path d="M10 200 L10 100 L80 40 L150 100 L150 200" stroke="#E8DFD0" stroke-width="1.5" fill="none"/>
+            <path d="M40 200 L40 120 L80 90 L120 120 L120 200" stroke="#E8DFD0" stroke-width="1" fill="none"/>
+          </svg>
+        </div>
+      </div>
+      <div class="proj-info">
+        <div class="proj-cat">Retail</div>
+        <div class="proj-name">Handloom Pavilion</div>
+        <div class="proj-loc">Jodhpur, 2022</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<!-- TEAM -->
+<section class="team" id="team">
+  <div class="section-tag reveal">Our Principals</div>
+  <div class="team-grid">
+    <div class="team-card reveal">
+      <div class="team-photo">
+        <div class="team-photo-fill t1">
+          <svg class="team-silhouette" width="160" height="280" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="50" rx="35" ry="40" fill="rgba(232,223,208,0.3)"/>
+            <path d="M20 280 L20 130 Q20 100 80 100 Q140 100 140 130 L140 280" fill="rgba(232,223,208,0.3)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="team-name">Anjali Mehta</div>
+      <div class="team-title">Founding Principal</div>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-photo">
+        <div class="team-photo-fill t2">
+          <svg class="team-silhouette" width="160" height="280" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="50" rx="35" ry="40" fill="rgba(232,223,208,0.3)"/>
+            <path d="M20 280 L20 130 Q20 100 80 100 Q140 100 140 130 L140 280" fill="rgba(232,223,208,0.3)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="team-name">Ravi Varma</div>
+      <div class="team-title">Founding Principal</div>
+    </div>
+    <div class="team-card reveal">
+      <div class="team-photo">
+        <div class="team-photo-fill t3">
+          <svg class="team-silhouette" width="160" height="280" viewBox="0 0 160 280" xmlns="http://www.w3.org/2000/svg">
+            <ellipse cx="80" cy="50" rx="35" ry="40" fill="rgba(232,223,208,0.3)"/>
+            <path d="M20 280 L20 130 Q20 100 80 100 Q140 100 140 130 L140 280" fill="rgba(232,223,208,0.3)"/>
+          </svg>
+        </div>
+      </div>
+      <div class="team-name">Priya Sinha</div>
+      <div class="team-title">Design Director</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+  <div class="footer-top">
+    <div class="footer-brand reveal">
+      <a href="#" class="logo">Mehta <span>&</span> Varma</a>
+      <p class="footer-tagline">"Grounded in the spirit of place. Shaped by the hands of craft."</p>
+      <a href="mailto:studio@mehtavarma.com" class="footer-email">studio@mehtavarma.com</a>
+    </div>
+    <div class="footer-col reveal">
+      <div class="footer-col-title">Navigate</div>
+      <ul>
+        <li><a href="#">Projects</a></li>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Awards</a></li>
+        <li><a href="#">Publications</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col reveal">
+      <div class="footer-col-title">Studios</div>
+      <ul>
+        <li><a href="#">New Delhi</a></li>
+        <li><a href="#">Jaipur</a></li>
+        <li><a href="#">Bengaluru</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>© Mehta & Varma 2025. All rights reserved.</span>
+    <div class="social-links">
+      <a href="#">Instagram</a>
+      <a href="#">LinkedIn</a>
+      <a href="#">Dezeen</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.transform = `translate(${mx - 5}px, ${my - 5}px)`;
+  });
+  function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.transform = `translate(${rx - 18}px, ${ry - 18}px)`;
+    requestAnimationFrame(animRing);
+  }
+  animRing();
+
+  // Nav scroll
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 60);
+  });
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), 80);
+        io.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.12 });
+  reveals.forEach(el => io.observe(el));
+</script>
+</body>
+</html>

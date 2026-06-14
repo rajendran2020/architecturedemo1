@@ -474,3 +474,45 @@ footer { background:var(--bark); padding:80px 48px 48px; }
   footer { padding:60px 24px 40px; }
   .scroll-nudge { display:none; }
 }
+
+/* ============================================================
+   FOOTER ADDITIONS — Phone, Map, Address
+   ============================================================ */
+.footer-contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 28px;
+}
+.footer-phone {
+  display: block;
+  font-size: 0.78rem;
+  color: rgba(232,223,208,0.55);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+.footer-phone:hover { color: var(--clay); }
+
+.footer-map {
+  margin-top: 56px;
+  padding-top: 48px;
+  border-top: 1px solid rgba(196,168,130,0.2);
+}
+.map-wrapper {
+  border: 1px solid rgba(196,168,130,0.15);
+  overflow: hidden;
+  filter: grayscale(30%) sepia(10%);
+  transition: filter 0.4s;
+}
+.map-wrapper:hover { filter: none; }
+.footer-address {
+  margin-top: 14px;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  color: rgba(232,223,208,0.35);
+}
+
+@media (max-width:900px) {
+  .footer-contact-details { margin-top: 20px; }
+  .map-wrapper iframe { height: 200px; }
+}
